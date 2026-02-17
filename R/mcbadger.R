@@ -6,7 +6,7 @@
 #' @return Invisibly returns `NULL`. Called for its side-effect of setting the future plan.
 #' @export
 #' @importFrom future plan multicore multisession
-willow <- function(workers = NULL) {
+willow <- function(workers = workers = parallel::detectCores() - 1) {
   # Worker Initialisation for Local Launch of Operating system specific Workflows
   os <- tolower(Sys.info()[["sysname"]])
 
