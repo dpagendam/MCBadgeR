@@ -1,3 +1,5 @@
+![MCBadgeR hex sticker](man/figures/mcbadger_hex.png)
+
 # MCBadgeR
 
 Lightweight helpers for running Monte Carlo sampling workflows ("badgering" an underlying model with different parameters) and where a model can be run over multiple scenario input files.  There is also optional functionality for "burrowing" through outputs, with parallelism powered by the `future` ecosystem.
