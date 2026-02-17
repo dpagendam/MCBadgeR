@@ -2,9 +2,7 @@ Package: MCBadgeR
 Type: Package
 Title: Monte Carlo Scenario Badgering Helpers
 Version: 1.0.0
-Authors@R: c(
-    person("Dan", family = "Pagendam", role = c("aut", "cre"), email = "dan.pagendam@data61.csiro.au")
-)
+Authors@R: person("Dan", family = "Pagendam", role = c("aut", "cre"), email = "dan.pagendam@data61.csiro.au")
 Description: Helpers for Monte Carlo sampling of parameter sets, applying parameterised transformations to scenario files, and post-processing outputs using parallel workflows via future.
 License: MIT + file LICENSE
 Encoding: UTF-8
