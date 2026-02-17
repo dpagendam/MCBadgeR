@@ -1,0 +1,7 @@
+export(MCBadger)
+export(badger)
+export(burrow)
+export(willow)
+importFrom(future,plan,multicore,multisession)
+importFrom(future.apply,future_lapply)
+importFrom(EnvStats,rtri)
