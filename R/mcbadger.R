@@ -6,7 +6,18 @@
 #' @return Invisibly returns `NULL`. Called for its side-effect of setting the future plan.
 #' @export
 #' @importFrom future plan multicore multisession
-willow <- function(workers = workers = parallel::detectCores() - 1) {
+willow <- function(workers = NULL) {
+	if (is.null(workers)) {
+
+    # If running under SLURM, respect allocation
+    slurm_cores <- Sys.getenv("SLURM_CPUS_PER_TASK")
+
+    if (nzchar(slurm_cores)) {
+      workers <- as.integer(slurm_cores)
+    } else {
+      workers <- max(1, parallel::detectCores() - 1)
+    }
+  }
   # Worker Initialisation for Local Launch of Operating system specific Workflows
   os <- tolower(Sys.info()[["sysname"]])
 
@@ -199,7 +210,19 @@ badger <- function(parameterNames,
                    burrow_doThisToEachFile = NULL,
                    burrow_doThisAfterFiles = NULL,
                    ...) {
-
+  
+  burrow <- function(outputFiles, burrow_doThisToEachFile, burrow_doThisAfterFiles, parFiles = TRUE, ...) {
+     if (parFiles) {
+       stuffFromFiles <- future.apply::future_lapply(outputFiles, function(f) burrow_doThisToEachFile(f, ...))
+     } else {
+       stuffFromFiles <- vector("list", length(outputFiles))
+       for (k in seq_along(outputFiles)) {
+         stuffFromFiles[[k]] <- burrow_doThisToEachFile(outputFiles[k], ...)
+       }
+     }
+     burrow_doThisAfterFiles(stuffFromFiles, ...)
+  }
+  
   thisParamSample <- rep(NA_real_, length(parameterNames))
 
   if (!is.null(paramVals)) {
@@ -236,7 +259,7 @@ badger <- function(parameterNames,
     }
   }
 
-  badger_result <- badger_doThisAfterFiles(stuffReturnedFromBadgeringFiles)
+  badger_result <- badger_doThisAfterFiles(stuffReturnedFromBadgeringFiles, ...)
 
   if (isTRUE(useBurrow)) {
     outputFiles <- badger_result[["outputFiles"]]
@@ -250,26 +273,4 @@ badger <- function(parameterNames,
   badger_result
 }
 
-#' Post-process output files ("burrow")
-#'
-#' @param outputFiles Character vector of output file paths.
-#' @param burrow_doThisToEachFile Function applied to each output file.
-#' @param burrow_doThisAfterFiles Function applied after all output files have been processed.
-#' @param parFiles Logical. If `TRUE`, parallelise over output files.
-#' @param ... Passed through to user functions.
-#' @return Result of `burrow_doThisAfterFiles()`.
-#' @export
-#' @importFrom future.apply future_lapply
-burrow <- function(outputFiles, burrow_doThisToEachFile, burrow_doThisAfterFiles, parFiles = TRUE, ...) {
 
-  if (parFiles) {
-    stuffFromFiles <- future.apply::future_lapply(outputFiles, function(f) burrow_doThisToEachFile(f, ...))
-  } else {
-    stuffFromFiles <- vector("list", length(outputFiles))
-    for (k in seq_along(outputFiles)) {
-      stuffFromFiles[[k]] <- burrow_doThisToEachFile(outputFiles[k], ...)
-    }
-  }
-
-  burrow_doThisAfterFiles(stuffFromFiles)
-}
