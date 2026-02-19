@@ -212,8 +212,6 @@ badger <- function(parameterNames,
                    ...) {
 
   stopifnot(is.function(badger_doThisToEachFile), is.function(badger_doThisAfterFiles))
-  stopifnot(length(distributionTypes) == length(parameterNames))
-  stopifnot(length(distributionList) == length(parameterNames))
 
   burrow <- function(outputFiles, burrow_doThisToEachFile, burrow_doThisAfterFiles, parFiles = TRUE, ...) {
     stopifnot(is.function(burrow_doThisToEachFile), is.function(burrow_doThisAfterFiles))
@@ -233,6 +231,8 @@ badger <- function(parameterNames,
     stopifnot(length(paramVals) == length(parameterNames))
     thisParamSample <- as.numeric(paramVals)
   } else {
+    stopifnot(length(distributionTypes) == length(parameterNames))
+    stopifnot(length(distributionList) == length(parameterNames))
     thisParamSample <- rep(NA_real_, length(parameterNames))
     for (j in seq_along(parameterNames)) {
       type <- distributionTypes[j]
