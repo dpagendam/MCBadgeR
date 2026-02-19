@@ -210,41 +210,50 @@ badger <- function(parameterNames,
                    burrow_doThisToEachFile = NULL,
                    burrow_doThisAfterFiles = NULL,
                    ...) {
-  
-  burrow <- function(outputFiles, burrow_doThisToEachFile, burrow_doThisAfterFiles, parFiles = TRUE, ...) {
-     if (parFiles) {
-       stuffFromFiles <- future.apply::future_lapply(outputFiles, function(f) burrow_doThisToEachFile(f, ...))
-     } else {
-       stuffFromFiles <- vector("list", length(outputFiles))
-       for (k in seq_along(outputFiles)) {
-         stuffFromFiles[[k]] <- burrow_doThisToEachFile(outputFiles[k], ...)
-       }
-     }
-     burrow_doThisAfterFiles(stuffFromFiles, ...)
-  }
-  
-  thisParamSample <- rep(NA_real_, length(parameterNames))
 
-  if (!is.null(paramVals)) {
-    thisParamSample <- as.numeric(paramVals)
-  } else {
-    for (j in seq_along(parameterNames)) {
-      if (distributionTypes[j] == "uniform") {
-        thisParamSample[j] <- stats::runif(1, distributionList[[j]][1], distributionList[[j]][2])
-      }
-      if (distributionTypes[j] == "normal") {
-        thisParamSample[j] <- stats::rnorm(1, distributionList[[j]][1], distributionList[[j]][2])
-      }
-      if (distributionTypes[j] == "lognormal") {
-        thisParamSample[j] <- stats::rlnorm(1, distributionList[[j]][1], distributionList[[j]][2])
-      }
-      if (distributionTypes[j] == "triangular") {
-        thisParamSample[j] <- EnvStats::rtri(1, distributionList[[j]][1], distributionList[[j]][2], distributionList[[j]][3])
-      }
-      if (distributionTypes[j] == "samples") {
-        thisParamSample[j] <- base::sample(distributionList[[j]], 1)
+  stopifnot(is.function(badger_doThisToEachFile), is.function(badger_doThisAfterFiles))
+  stopifnot(length(distributionTypes) == length(parameterNames))
+  stopifnot(length(distributionList) == length(parameterNames))
+
+  burrow <- function(outputFiles, burrow_doThisToEachFile, burrow_doThisAfterFiles, parFiles = TRUE, ...) {
+    stopifnot(is.function(burrow_doThisToEachFile), is.function(burrow_doThisAfterFiles))
+
+    if (parFiles) {
+      stuffFromFiles <- future.apply::future_lapply(outputFiles, function(f) burrow_doThisToEachFile(f, ...))
+    } else {
+      stuffFromFiles <- vector("list", length(outputFiles))
+      for (k in seq_along(outputFiles)) {
+        stuffFromFiles[[k]] <- burrow_doThisToEachFile(outputFiles[k], ...)
       }
     }
+    burrow_doThisAfterFiles(stuffFromFiles, ...)
+  }
+
+  if (!is.null(paramVals)) {
+    stopifnot(length(paramVals) == length(parameterNames))
+    thisParamSample <- as.numeric(paramVals)
+  } else {
+    thisParamSample <- rep(NA_real_, length(parameterNames))
+    for (j in seq_along(parameterNames)) {
+      type <- distributionTypes[j]
+      if (type == "uniform") {
+        thisParamSample[j] <- stats::runif(1, distributionList[[j]][1], distributionList[[j]][2])
+      } else if (type == "normal") {
+        thisParamSample[j] <- stats::rnorm(1, distributionList[[j]][1], distributionList[[j]][2])
+      } else if (type == "lognormal") {
+        thisParamSample[j] <- stats::rlnorm(1, distributionList[[j]][1], distributionList[[j]][2])
+      } else if (type == "triangular") {
+        thisParamSample[j] <- EnvStats::rtri(1, distributionList[[j]][1], distributionList[[j]][2], distributionList[[j]][3])
+      } else if (type == "samples") {
+        thisParamSample[j] <- base::sample(distributionList[[j]], 1)
+      } else {
+        stop("Unknown distribution type: ", type)
+      }
+    }
+  }
+
+  if (anyNA(thisParamSample)) {
+    stop("One or more sampled parameters are NA. Check distributionTypes/distributionList.")
   }
 
   if (parFiles) {
@@ -262,12 +271,14 @@ badger <- function(parameterNames,
   badger_result <- badger_doThisAfterFiles(stuffReturnedFromBadgeringFiles, ...)
 
   if (isTRUE(useBurrow)) {
+    if (!is.function(burrow_doThisToEachFile) || !is.function(burrow_doThisAfterFiles)) {
+      stop("useBurrow=TRUE requires burrow_doThisToEachFile and burrow_doThisAfterFiles to be functions.")
+    }
     outputFiles <- badger_result[["outputFiles"]]
     if (is.null(outputFiles)) {
       stop("useBurrow=TRUE but badger_result does not contain an element named 'outputFiles'.")
     }
-    burrow_result <- burrow(outputFiles, burrow_doThisToEachFile, burrow_doThisAfterFiles, parFiles, ...)
-    return(burrow_result)
+    return(burrow(outputFiles, burrow_doThisToEachFile, burrow_doThisAfterFiles, parFiles, ...))
   }
 
   badger_result
