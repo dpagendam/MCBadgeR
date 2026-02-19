@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="man/figures/mcbadger_hex_.png" width="400">
+  <img src="man/figures/mcbadger_hex.png" width="400">
 </p>
 
 # MCBadgeR
@@ -11,7 +11,7 @@ Lightweight helpers for running Monte Carlo sampling workflows ("badgering" an u
 The core function of the package is called `MCBadger` which is intended to perform a Monte Carlo (MC) sampling of parameters of some underlying model.  
 
 <p align="center">
-  <img src="man/figures/MCBadger.png" width="400">
+  <img src="man/figures/MCBadger.png" width="1000">
 </p>
 
 For each parameter set that a model is run with, there are two user-provided functions that MCBadger will always execute: `badger_doThisToEachFile` (executed once for each file named in `inputFiles`) and `badger_doThisAfterFiles` which will be run once after `badger_doThisToEachFile` has finished iterating over all input files.
@@ -21,7 +21,7 @@ Each of the outputs that is returned from `badger_doThisToEachFile` will be stor
 Usually, `burrow_doThisAfterFiles` would be used to summarise the results from all of the outputs and return the output that the user wants to keep for the given parameter set.
 
 <p align="center">
-  <img src="man/figures/MCBadger.png" width="400">
+  <img src="man/figures/badger.png" width="1000">
 </p>
 
 MCBadger allows the user to parallelise the computation of MCBadger via two input arguments: `parParams` and `parFiles`.  Setting  `parParams = TRUE` forces the Monte Carlo runs of the model to be parallelised over compute cores, whereas `parFiles = TRUE` will allow the runs of `badger_doThisToEachFile` and `burrow_doThisToEachFile` to be parallelised over compute cores.  Note that `parParams = TRUE` requires the model, input files and output files to be copied to individual folders for each compute core to operate on.  The user would need to include these operations as part of their `badger_doThisToEachFile` function. Also, ensure that you have adequate disk space for this to occur.
