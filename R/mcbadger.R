@@ -217,7 +217,7 @@ badger <- function(parameterNames,
     stopifnot(is.function(burrow_doThisToEachFile), is.function(burrow_doThisAfterFiles))
 
     if (parFiles) {
-      stuffFromFiles <- future.apply::future_lapply(outputFiles, function(f) burrow_doThisToEachFile(f, ...))
+      stuffFromFiles <- future.apply::future_lapply(outputFiles, function(f) {f <- unlist(f); burrow_doThisToEachFile(f, ...)})
     } else {
       stuffFromFiles <- vector("list", length(outputFiles))
       for (k in seq_along(outputFiles)) {
