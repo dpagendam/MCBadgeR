@@ -259,7 +259,7 @@ badger <- function(parameterNames,
   if (parFiles) {
     stuffReturnedFromBadgeringFiles <- future.apply::future_lapply(
       inputFiles,
-      function(f) badger_doThisToEachFile(f, parameterNames, thisParamSample, ...)
+      function(f){f <- unlist(f); badger_doThisToEachFile(f, parameterNames, thisParamSample, ...)}
     )
   } else {
     stuffReturnedFromBadgeringFiles <- vector("list", length(inputFiles))
